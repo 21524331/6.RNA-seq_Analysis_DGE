@@ -1,0 +1,72 @@
+---
+title: "Dff gene exppression"
+author: "Rahul ladhani"
+date: "2023-07-09"
+output: html_document
+---
+
+```{r}
+setwd("C:/Users/rahul/OneDrive - University of West London/Desktop/R learning/Differential Gene Expression")
+```
+
+```{r}
+ #Differential Gene Expression Analysis (DGE) with DEseq2
+# Installing DEseq2 package
+if (!require("BiocManager", quietly = TRUE))
+ install.packages("BiocManager")
+BiocManager::install("DESeq2")
+```
+
+
+```{r}
+# Load the Library
+library(DESeq2)
+```
+
+```{r}
+#Read the Data
+countsN <- read.csv("ExpData.csv")
+rownames(countsN) <- countsN[,1]
+countsN <- countsN[,-1]
+dim(countsN)
+```
+
+```{r}
+#Condition and Coldata
+condition <- as.factor(c(rep("NP", 8,), rep("PE", 8)))
+colData <- data.frame(row.names=colnames(countsN), condition=factor(condition, levels=c('NP', 'PE')))
+```
+
+
+```{r}
+#DEseqDataset
+dataset <- DESeqDataSetFromMatrix(countData = countsN,
+ colData = colData,design = ~condition)
+
+dataset
+```
+
+```{r}
+#Then run the DESeq2 algorithm and extract results for our two-class comparison:
+
+dds <- DESeq(dataset)
+```
+
+```{r}
+print(dds)
+```
+
+```{r}
+result <- results(dds, contrast=c('condition','NP','PE'), alpha = 0.01)
+result <- results(dds, contrast=c('condition','NP','PE'), alpha = 0.01)
+summary(result)
+```
+
+```{r}
+resSigind = result[ which(result$padj < 0.01 & result$log2FoldChange > 0), ]
+resSigrep = result[ which(result$padj < 0.01 & result$log2FoldChange < 0), ]
+resSig = rbind(resSigind, resSigrep)
+#Extract the up and down regulated gene file
+#write.csv(resSig, "Week9_DGEUp&DnReg0.01.csv")
+```
+
